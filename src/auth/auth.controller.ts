@@ -7,7 +7,7 @@ import { LogoutResponse } from 'src/shared/interfaces/response.interface';
 export class AuthController {
     constructor(private authService: AuthService) {}
 
-    @Post('register')
+    @Post('registration')
     register(@Body() body: UserDto): Promise<UserDto> {
         return this.authService.register(body);
     }

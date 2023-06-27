@@ -35,7 +35,7 @@ export class ProductsService {
             throw new HttpException('Provide product id', HttpStatus.BAD_REQUEST);
         }
         const existingProduct = await this.productModel.findOne({name: product.name});
-        if (existingProduct) {
+        if (existingProduct && (existingProduct._id != product._id)) {
             throw new HttpException('Product already exists', HttpStatus.BAD_REQUEST);
         }
         await this.productModel.findByIdAndUpdate(product._id, product);
