@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
 import { TokenModule } from './token/token.module';
 import { AuthMiddleware } from './shared/middleware/auth-middleware';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { AuthMiddleware } from './shared/middleware/auth-middleware';
     MongooseModule.forRoot(process.env.DB_URL),
     AuthModule,
     ProductsModule,
-    TokenModule
+    TokenModule,
+    ChatModule
   ],
   controllers: [],
   providers: [],

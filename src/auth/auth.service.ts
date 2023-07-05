@@ -15,13 +15,13 @@ export class AuthService {
     ) { }
 
     async register(user: UserDto): Promise<UserDto> {
-        const { email, password } = user;
+        const { email, password, userName } = user;
         const existingUser = await this.userModel.findOne({ email });
         if (existingUser) {
             throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
         }
         const hashPassword = bcrypt.hashSync(password, 5);
-        const userData = new this.userModel({ email, password: hashPassword });
+        const userData = new this.userModel({ email, password: hashPassword, userName });
         await userData.save();
         return userData;
     }
