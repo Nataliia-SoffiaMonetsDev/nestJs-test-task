@@ -1,16 +1,18 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { Message } from './chat.model';
-import { Model } from 'mongoose';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { ChatDto } from './dto/chat.dto';
+import { ChatService } from './chat.service';
 
-@WebSocketGateway({ cors: { orgin: ['http://localhost:4200'] } })
+@WebSocketGateway({
+    cors: {
+        origin: '*',
+    }
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     constructor(
-        @InjectModel(Message.name) private messageModel: Model<Message>
-    ) {}
+        private chatService: ChatService
+    ) { }
 
     @WebSocketServer()
     server: Server
@@ -25,14 +27,31 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @SubscribeMessage('getAllMessages')
     async getAllMessages() {
-        const messages = await this.messageModel.find();
+        const messages = await this.chatService.getAllMessages();
         this.server.emit('allMessages', messages);
     }
 
     @SubscribeMessage('sendMessage')
-    async handleMessage(@MessageBody() data: ChatDto) {
-        const messageData = new this.messageModel(data);
-        await messageData.save();
-        this.server.emit('newMessage', data);
+    async handleMessage(@MessageBody() data: ChatDto, @ConnectedSocket() socket: Socket) {
+        const messageData = await this.chatService.sendMessage(data);
+        this.server.emit('newMessage', messageData);
+        socket.broadcast.emit('alertMessage', messageData);
+    }
+
+    @SubscribeMessage('getNotifications')
+    async getNotifications() {
+        const notifications = await this.chatService.getNotifications();
+        this.server.emit('getAllNotifications', notifications);
+    }
+
+    @SubscribeMessage('deleteNotification')
+    async deleteNotification(@MessageBody() ids: string[]) {
+        const notifications = await this.chatService.deleteNotification(ids);
+        this.server.emit('allNotificationsAfterDelete', notifications);
+    }
+
+    @SubscribeMessage('deleteAllNotifications')
+    async deleteAllNotifications(@MessageBody() recipientId: string) {
+        await this.chatService.deleteAllNotifications(recipientId);
     }
 }

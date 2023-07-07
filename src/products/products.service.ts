@@ -3,10 +3,14 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './product.model';
 import { ProductDto } from './dto/product.dto';
+import { ProductsGateway } from './products.gateway';
 
 @Injectable()
 export class ProductsService {
-    constructor(@InjectModel(Product.name) private productModel: Model<Product>) { }
+    constructor(
+        @InjectModel(Product.name) private productModel: Model<Product>,
+        private readonly productsGateway: ProductsGateway,
+    ) { }
 
     async createProduct(product: ProductDto): Promise<ProductDto> {
         const existingProduct = await this.productModel.findOne({name: product.name});
@@ -14,6 +18,7 @@ export class ProductsService {
             throw new HttpException('Product already exists', HttpStatus.BAD_REQUEST);
         }
         const createdProduct = await this.productModel.create(product);
+        this.productsGateway.handleProductCreation(createdProduct);
         return createdProduct;
     }
 
@@ -40,6 +45,7 @@ export class ProductsService {
         }
         await this.productModel.findByIdAndUpdate(product._id, product);
         const updatedProducts = await this.productModel.find();
+        this.productsGateway.handleProductUpdate(updatedProducts, product._id);
         return updatedProducts;
     }
 
@@ -47,8 +53,10 @@ export class ProductsService {
         if (!id) {
             throw new HttpException('Provide product id', HttpStatus.BAD_REQUEST);
         }
+        const product = await this.productModel.findOne({_id: id});
         await this.productModel.findByIdAndDelete(id);
         const products = await this.productModel.find();
+        this.productsGateway.handleProductDelete(products, product.name);
         return products;
     }
 }

@@ -1,3 +1,4 @@
+import * as mongoose from 'mongoose';
 import { IsString } from 'class-validator';
 
 export class ChatDto {
@@ -8,5 +9,7 @@ export class ChatDto {
     readonly userName: string;
 
     @IsString({ message: 'Date must be a string' })
-    readonly date: string;;
+    readonly date: string;
+
+    readonly _id?: mongoose.Types.ObjectId;
 }
