@@ -26,32 +26,53 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('getAllMessages')
-    async getAllMessages() {
-        const messages = await this.chatService.getAllMessages();
-        this.server.emit('allMessages', messages);
+    async getAllMessages(@ConnectedSocket() socket: Socket) {
+        try {
+            const messages = await this.chatService.getAllMessages();
+            this.server.emit('allMessages', messages);
+        } catch (error) {
+            socket.emit('messageError', error.message || 'Failed to get all messages');
+        }
     }
 
     @SubscribeMessage('sendMessage')
     async handleMessage(@MessageBody() data: ChatDto, @ConnectedSocket() socket: Socket) {
-        const messageData = await this.chatService.sendMessage(data);
-        this.server.emit('newMessage', messageData);
-        socket.broadcast.emit('alertMessage', messageData);
+        try {
+            const messageData = await this.chatService.sendMessage(data);
+            this.server.emit('newMessage', messageData);
+            socket.broadcast.emit('alertMessage', messageData);
+        } catch (error) {
+            socket.emit('messageError', error.message || 'Failed to send message');
+        }
     }
 
     @SubscribeMessage('getNotifications')
-    async getNotifications() {
-        const notifications = await this.chatService.getNotifications();
-        this.server.emit('getAllNotifications', notifications);
+    async getNotifications(@ConnectedSocket() socket: Socket) {
+        try {
+            const notifications = await this.chatService.getNotifications();
+            this.server.emit('getAllNotifications', notifications);
+        } catch (error) {
+            socket.emit('notificationError', error.message || 'Failed to get notifications');
+        }
     }
 
     @SubscribeMessage('deleteNotification')
-    async deleteNotification(@MessageBody() ids: string[]) {
-        const notifications = await this.chatService.deleteNotification(ids);
-        this.server.emit('allNotificationsAfterDelete', notifications);
+    async deleteNotification(@MessageBody() ids: string[], @ConnectedSocket() socket: Socket) {
+        try {
+            const notifications = await this.chatService.deleteNotification(ids);
+            this.server.emit('allNotificationsAfterDelete', notifications);
+        } catch (error) {
+            console.log(error)
+            socket.emit('notificationError', error.message || 'Failed to delete notification');
+        }
     }
 
     @SubscribeMessage('deleteAllNotifications')
-    async deleteAllNotifications(@MessageBody() recipientId: string) {
-        await this.chatService.deleteAllNotifications(recipientId);
+    async deleteAllNotifications(@MessageBody() recipientId: string, @ConnectedSocket() socket: Socket) {
+        try {
+            await this.chatService.deleteAllNotifications(recipientId);
+        } catch (error) {
+            socket.emit('notificationError', error.message || 'Failed to delete all notifications');
+        }
     }
 }
