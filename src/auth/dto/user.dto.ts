@@ -6,6 +6,8 @@ export class UserDto {
     @IsEmail({}, { message: 'Please enter valid email' })
     readonly email: string;
 
+    readonly userName?: string;
+
     @IsString({ message: 'Password must be a string' })
     @Length(6, 10, { message: 'Password must contain between 4 and 10 characters' })
     readonly password: string;
