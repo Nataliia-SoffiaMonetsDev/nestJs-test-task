@@ -25,8 +25,7 @@ export class AuthService {
             throw new HttpException('User name should be unique', HttpStatus.BAD_REQUEST);
         }
         const hashPassword = bcrypt.hashSync(password, 5);
-        const userData = new this.userModel({ email, password: hashPassword, userName });
-        await userData.save();
+        const userData = await this.userModel.create({ email, password: hashPassword, userName });
         return userData;
     }
 

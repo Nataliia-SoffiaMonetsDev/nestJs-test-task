@@ -62,7 +62,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const notifications = await this.chatService.deleteNotification(ids);
             this.server.emit('allNotificationsAfterDelete', notifications);
         } catch (error) {
-            console.log(error)
             socket.emit('notificationError', error.message || 'Failed to delete notification');
         }
     }

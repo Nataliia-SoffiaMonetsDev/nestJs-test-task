@@ -31,7 +31,7 @@ export class ChatService {
     async deleteAllNotifications(recipientId: string): Promise<void> {
         try {
             const id = new ObjectId(recipientId);
-            const notification = await this.notificationModel.findOne({ recipientId: id }).exec();
+            const notification = await this.notificationModel.findOne({ recipientId: id });
             if (notification) {
                 notification.messages = [];
                 await notification.save();
@@ -53,7 +53,7 @@ export class ChatService {
     async deleteNotification(ids: string[]): Promise<NotificationDto[]> {
         try {
             const id = new ObjectId(ids[0]);
-            const notification = await this.notificationModel.findOne({ recipientId: id }).exec();
+            const notification = await this.notificationModel.findOne({ recipientId: id });
             if (notification) {
                 const deletedMessage = notification.messages.find((message) => message._id.toString() === ids[1]);
                 if (deletedMessage) {
@@ -63,7 +63,7 @@ export class ChatService {
                     throw new Error('Notification not found');
                 }
             } else {
-                throw new Error('Notifications for this user were not not found');
+                throw new Error('Notifications for this user were not found');
             }
             const notifications = await this.notificationModel.find();
             return notifications;
@@ -75,14 +75,13 @@ export class ChatService {
     async sendMessage(data: ChatDto): Promise<ChatDto> {
         try {
             const users = await this.userModel.find();
-            if (!users) {
+            if (!users || users.length === 0) {
                 throw new Error('No users found');
             }
-            const messageData = new this.messageModel(data);
-            await messageData.save();
+            const messageData = await this.messageModel.create(data);
             for (const user of users) {
                 if (user.userName !== data.userName) {
-                    const notification = await this.notificationModel.findOne({ recipientId: user._id }).exec();
+                    const notification = await this.notificationModel.findOne({ recipientId: user._id });
                     if (notification) {
                         notification.messages.push(messageData);
                         await notification.save();

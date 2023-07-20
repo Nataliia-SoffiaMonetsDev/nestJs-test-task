@@ -13,4 +13,6 @@ export class UserDto {
     readonly password: string;
 
     readonly _id?: mongoose.Types.ObjectId;
+
+    readonly token?: string
 }
