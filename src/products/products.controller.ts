@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Get, Param, Put, Delete } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
+import { ProductInput } from './graphQL-model/input-fields.model';
 
 @Controller()
 export class ProductsController {
@@ -22,7 +23,7 @@ export class ProductsController {
     }
 
     @Put('products')
-    updateProduct(@Body() body: ProductDto): Promise<ProductDto[]> {
+    updateProduct(@Body() body: ProductInput): Promise<ProductDto[]> {
         return this.productsService.updateProduct(body);
     }
 

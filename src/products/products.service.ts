@@ -4,6 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './product.model';
 import { ProductDto } from './dto/product.dto';
 import { ProductsGateway } from './products.gateway';
+import { ProductInput } from './graphQL-model/input-fields.model';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class ProductsService {
@@ -35,17 +37,18 @@ export class ProductsService {
         return product;
     }
 
-    async updateProduct(product: ProductDto): Promise<ProductDto[]> {
+    async updateProduct(product: ProductInput): Promise<ProductDto[]> {
         if (!product._id) {
             throw new HttpException('Provide product id', HttpStatus.BAD_REQUEST);
         }
         const existingProduct = await this.productModel.findOne({name: product.name});
-        if (existingProduct && (existingProduct._id != product._id)) {
+        const id = new mongoose.Types.ObjectId(product._id);
+        if (existingProduct && (existingProduct._id != id)) {
             throw new HttpException('Product already exists', HttpStatus.BAD_REQUEST);
         }
         await this.productModel.findByIdAndUpdate(product._id, product);
         const updatedProducts = await this.productModel.find();
-        this.productsGateway.handleProductUpdate(updatedProducts, product._id);
+        this.productsGateway.handleProductUpdate(updatedProducts, id);
         return updatedProducts;
     }
 

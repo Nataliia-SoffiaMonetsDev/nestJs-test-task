@@ -15,7 +15,7 @@ async function start() {
     const PORT = process.env.PORT || 5000;
     const app = await NestFactory.create(AppModule);
     app.enableCors({
-        origin: 'http://products-list-with-chat.s3-website.eu-north-1.amazonaws.com',
+        origin: 'http://localhost:4200',
         credentials: true,
     });
     app.useGlobalPipes(createValidationPipe());
