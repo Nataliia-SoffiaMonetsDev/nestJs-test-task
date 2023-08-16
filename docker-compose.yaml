@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  app:
+    container_name: products_list
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      DB_URL: 'mongodb+srv://user:user@cluster0.muovxrb.mongodb.net/?retryWrites=true&w=majority'
+    ports:
+      - '5000:5000'
+    depends_on:
+      - database
+
+  database:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 'user'
+      MONGO_INITDB_ROOT_PASSWORD: 'user'
